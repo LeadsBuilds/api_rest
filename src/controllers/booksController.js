@@ -2,14 +2,32 @@ import books from "../models/Book.js";
 
 class BookController {
     static getAll = (request, response) => {
-        books.find((err, books) => {
+        books.find()
+        .populate('author')
+        .exec((err, books) => {
             response.status(200).json(books);
         });
     }
 
     static getById = (request, response) => {
         const id = request.params.id;
-        books.findById(id, (err, books) => {
+        books.findById(id)
+        .populate('author', 'name')
+        .exec((err, books) => {
+            if(err) {
+                response.status(400).send({message: `Erro: book not found`})
+                return;
+            }
+
+            response.status(200).send(books);
+        });
+    }
+
+    static getByEditor = (request, response) => {
+        const editor = request.query.editor;
+        books.find({'editor': editor}, {})
+        .populate('author', 'name')
+        .exec((err, books) => {
             if(err) {
                 response.status(400).send({message: `Erro: book not found`})
                 return;
